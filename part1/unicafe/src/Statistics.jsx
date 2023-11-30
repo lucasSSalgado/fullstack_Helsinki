@@ -9,14 +9,14 @@ const Statistics = (props) => {
         <div>
             { 
             props.good || props.neutral || props.bad ?
-                <>
-                    <StatisticLine text={"good"} value={props.good} />
-                    <StatisticLine text={"neutral"} value={props.neutral} />
-                    <StatisticLine text={"bad"} value={props.bad} />
-                    <StatisticLine text={"all"} value={total} />
-                    <StatisticLine text={"average"} value={average} />
-                    <StatisticLine text={"positive"} value={`${positive}%`} />
-                </> :   
+                <table>
+                    <tr><StatisticLine text={"good"} value={props.good} /></tr>
+                    <tr><StatisticLine text={"neutral"} value={props.neutral} /></tr>
+                    <tr><StatisticLine text={"bad"} value={props.bad} /></tr>
+                    <tr><StatisticLine text={"all"} value={total} /></tr>
+                    <tr><StatisticLine text={"average"} value={average} /></tr>
+                    <tr><StatisticLine text={"positive"} value={`${positive}%`} /></tr>
+                </table> :   
                 <p>
                     No feedback given
                 </p>
