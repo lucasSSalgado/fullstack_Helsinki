@@ -1,6 +1,15 @@
 const express = require('express')
+const morgan = require('morgan')
+
 const app = express()
 app.use(express.json())
+morgan.token('post', function (req, res) { 
+    if (req.method === 'POST') {
+        return JSON.stringify(req.body) 
+    }
+    return 
+})
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post'))
 
 let notes = [
     { 
@@ -24,6 +33,15 @@ let notes = [
       "number": "39-23-6423122"
     }
 ]
+
+app.get('/info', (req, res) => {
+    let htmlResp = 
+    `
+        <p>Phonebook has info for ${notes.length} people</p>
+        <p>${new Date()}</p>
+    `
+    res.send(htmlResp)
+})
 
 app.get('/api/persons', (req, res) => {
     res.json(notes)
@@ -64,15 +82,6 @@ app.delete('/api/persons/:id', (req, res) => {
     const id = Number(req.params.id)
     notes = notes.filter(note => note.id !== id)
     res.json(notes)
-})
-
-app.get('/info', (req, res) => {
-    let htmlResp = 
-    `
-        <p>Phonebook has info for ${notes.length} people</p>
-        <p>${new Date()}</p>
-    `
-    res.send(htmlResp)
 })
 
 const PORT = 3001
