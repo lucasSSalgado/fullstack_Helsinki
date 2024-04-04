@@ -1,90 +1,104 @@
-const express = require('express')
-const morgan = require('morgan')
+require('dotenv').config();
+const express = require('express');
+const morgan = require('morgan');
+const cors = require('cors');
+const Phone = require('./models/database');
 
-const app = express()
-app.use(express.json())
-morgan.token('post', function (req, res) { 
-    if (req.method === 'POST') {
-        return JSON.stringify(req.body) 
-    }
-    return 
-})
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post'))
-
-let notes = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
-
-app.get('/info', (req, res) => {
-    let htmlResp = 
-    `
-        <p>Phonebook has info for ${notes.length} people</p>
-        <p>${new Date()}</p>
-    `
-    res.send(htmlResp)
-})
+const app = express();
+app.use(cors());
+app.use(express.static('dist'));
+app.use(express.json());
+// eslint-disable-next-line no-unused-vars
+morgan.token('post', (req, res) => {
+  if (req.method === 'POST') {
+    return JSON.stringify(req.body);
+  }
+});
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post'));
 
 app.get('/api/persons', (req, res) => {
-    res.json(notes)
-})
+  Phone.find({}).then((contact) => {
+    res.json(contact);
+  });
+});
 
-app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const note = notes.find(note => note.id === id)
-
-    if (note) {
-        res.json(note) 
-        return
+app.get('/api/persons/:id', (req, res, next) => {
+  Phone.findById(req.params.id).then((contact) => {
+    if (contact) {
+      res.json(contact);
+      return;
     }
-    else res.status(404).end()
-})
+    res.status(404).end();
+  }).catch((error) => next(error));
+});
 
-app.post('/api/persons', (req, res) => {
-    const note = req.body
-    if (!note.name || !note.number) {
-        return res.status(400).json({ 
-            error: 'name or number missing' 
-        })
+app.post('/api/persons', (req, res, next) => {
+  const contact = req.body;
+  if (!contact.name || !contact.number) {
+    return res.status(400).json({
+      error: 'name or number missing',
+    });
+  }
+
+  Phone.findOne({ name: contact.name }).then((elem) => {
+    if (elem) {
+      return res.status(400).json({
+        error: 'name must be unique',
+      });
     }
+    const newContact = new Phone({
+      name: contact.name,
+      number: contact.number,
+    });
 
-    if (notes.find(n => n.name === note.name)) {
-        return res.status(400).json({ 
-            error: 'name must be unique' 
-        })
-    }
+    Phone.create(newContact).then((c) => res.json(c)).catch((error) => next(error));
+  });
+});
 
-    const id = Math.floor(Math.random() * 1000000)
-    const newNote = { id, ...note }
-    notes.push(newNote)
-    return res.json(newNote)
-})
+app.put('/api/persons/:id', (req, res, next) => {
+  const { body } = req;
+  const contact = {
+    name: body.name,
+    number: body.number,
+  };
+  Phone.findByIdAndUpdate(req.params.id, contact, { new: true, runValidators: true, context: 'query' })
+    .then((updatedContact) => {
+      if (updatedContact) {
+        return res.json(updatedContact);
+      } return res.status(404).end();
+    }).catch((error) => next(error));
+});
 
-app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id)
-    notes = notes.filter(note => note.id !== id)
-    res.json(notes)
-})
+app.delete('/api/persons/:id', (req, res, next) => {
+  Phone.findByIdAndDelete(req.params.id).then(() => {
+    res.status(204).end();
+  }).catch((error) => next(error));
+});
 
-const PORT = 3001
+app.get('/info', (req, res) => {
+  Phone.find({}).then((contacts) => {
+    const htmlResp = `
+            <p>Phonebook has info for ${contacts.length} people</p>
+            <p>${new Date()}</p>
+        `;
+    res.send(htmlResp);
+  });
+});
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' });
+  } if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message });
+  }
+
+  next(error);
+};
+
+app.use(errorHandler);
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
-})
+  console.log(`Server running on port ${PORT}`);
+});

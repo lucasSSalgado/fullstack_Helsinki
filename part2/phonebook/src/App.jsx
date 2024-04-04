@@ -36,12 +36,17 @@ const App = () => {
         }
 
         phoneService.updateNumber(personId, updatePerson)
-        .then(() => setPersons([...newList, updatePerson]))
-        .catch(() => alert('Update the user was not possible'))
-        .finally(() => {
+        .then(() => {
+          setPersons([...newList, updatePerson])
           setSuccessMsg(`Update ${newName}`)
           setTimeout(() => {
             setSuccessMsg('')
+          }, 4000)
+        })
+        .catch(error => {
+          setErrorMsg(error.response.data.error)
+          setTimeout(() => {
+            setErrorMsg('')
           }, 4000)
         })
 
@@ -58,13 +63,18 @@ const App = () => {
     }
     phoneService
       .savePhone(newPerson)
-      .then(resp => setPersons([...persons, resp]))
-      .catch(() => alert('was not possible to save the new contact'))
-      .finally(() => {
+      .then(resp => {
+        setPersons([...persons, resp])
         setSuccessMsg(`Added ${newName}`)
         setTimeout(() => {
           setSuccessMsg('')
         }, 3000)
+      })
+      .catch(error => {
+        setErrorMsg(error.response.data.error)     
+        setTimeout(() => {
+          setErrorMsg('')
+        }, 4000)   
       })
 
     setNewName('')
