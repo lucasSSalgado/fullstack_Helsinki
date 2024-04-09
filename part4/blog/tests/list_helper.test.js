@@ -1,6 +1,24 @@
-const { test, describe } = require('node:test')
+const supertest = require('supertest')
+const { test, describe, after, before } = require('node:test')
 const assert = require('node:assert')
+const mongoose = require('mongoose')
 const listHelper = require('../utils/list_helper')
+const Blog = require('../models/blog')
+const app = require('../app')
+
+const api = supertest(app)
+
+before(async () => {
+    await Blog.deleteMany({});
+    const b1 = new Blog({title: "title 1", author: "author1", url: "url1", likes: 10})
+    const b2 = new Blog({title: "title 2", author: "author2", url: "url2", likes: 10})
+    await b1.save()
+    await b2.save() 
+})
+
+after(async () => {
+    await mongoose.connection.close();
+});
 
 describe('dummy', () => {
     test('dummy returns one', () => {
@@ -256,5 +274,65 @@ describe('most likes', () => {
             author: "Edsger W. Dijkstra",
             likes: 17
         })
+    })
+})
+
+describe('Api tests', () => {
+    test('check json response', async () => {
+        await api
+          .get('/api/blogs')
+          .expect(200)
+          .expect('Content-Type', /application\/json/)
+    })
+    test('check number of blogs', async () => {
+        const response = await api.get('/api/blogs')
+        assert.strictEqual(response.body.length, 2)
+    })
+    test('check id', async () => {
+        const response = await api.get('/api/blogs')
+        const first = response.body[0]
+
+        assert.ok(first.id)
+        assert.strictEqual(first._id, undefined)
+    })
+    test('post test', async () => {
+        const newBlog = new Blog({title: "title 3", author: "author3", url: "url3", likes: 3})
+        await newBlog.save()
+
+        const response = await api.get('/api/blogs')
+        assert.strictEqual(response.body.length, 3)
+        
+        const getLast = response.body[2]
+        assert.strictEqual(getLast.title, "title 3")
+    })
+    test('test likes equal zero when not provided', async () => {
+        const response = await api.post('/api/blogs')
+            .send({
+                title: "title 4", 
+                author: "author4", 
+                url: "url4"
+            })
+
+        assert.strictEqual(response.body.likes, 0)
+    })
+    test('title undefined', async () => {
+        const response = await api.post('/api/blogs')
+            .send({
+                author: "author5", 
+                url: "url5", 
+                likes: 50
+            })
+
+        assert.strictEqual(response.status, 400)
+    })
+    test('url undefined', async () => {
+        const response = await api.post('/api/blogs')
+            .send({
+                title: "title 5",
+                author: "author5", 
+                likes: 50
+            })
+
+        assert.strictEqual(response.status, 400)
     })
 })
