@@ -8,18 +8,6 @@ const app = require('../app')
 
 const api = supertest(app)
 
-before(async () => {
-    await Blog.deleteMany({});
-    const b1 = new Blog({title: "title 1", author: "author1", url: "url1", likes: 10})
-    const b2 = new Blog({title: "title 2", author: "author2", url: "url2", likes: 10})
-    await b1.save()
-    await b2.save() 
-})
-
-after(async () => {
-    await mongoose.connection.close();
-});
-
 describe('dummy', () => {
     test('dummy returns one', () => {
         const blogs = []
@@ -278,6 +266,18 @@ describe('most likes', () => {
 })
 
 describe('Api tests', () => {
+    before(async () => {
+        await Blog.deleteMany({});
+        const b1 = new Blog({title: "title 1", author: "author1", url: "url1", likes: 10})
+        const b2 = new Blog({title: "title 2", author: "author2", url: "url2", likes: 10})
+        await b1.save()
+        await b2.save() 
+    })
+    
+    after(async () => {
+        await mongoose.connection.close();
+    })
+
     test('check json response', async () => {
         await api
           .get('/api/blogs')
@@ -288,7 +288,7 @@ describe('Api tests', () => {
         const response = await api.get('/api/blogs')
         assert.strictEqual(response.body.length, 2)
     })
-    test('check id', async () => {
+    test('check _id dosent exists', async () => {
         const response = await api.get('/api/blogs')
         const first = response.body[0]
 
@@ -296,14 +296,17 @@ describe('Api tests', () => {
         assert.strictEqual(first._id, undefined)
     })
     test('post test', async () => {
-        const newBlog = new Blog({title: "title 3", author: "author3", url: "url3", likes: 3})
-        await newBlog.save()
+        const response = await api.post('/api/blogs')
+            .send({
+                title: "title 3", 
+                author: "author3", 
+                url: "url3"
+            })
 
-        const response = await api.get('/api/blogs')
-        assert.strictEqual(response.body.length, 3)
-        
-        const getLast = response.body[2]
-        assert.strictEqual(getLast.title, "title 3")
+        assert.deepEqual(response.body.title, "title 3")
+
+        const allBlogs  =  await api.get('/api/blogs')
+        assert.strictEqual(allBlogs.body.length, 3)
     })
     test('test likes equal zero when not provided', async () => {
         const response = await api.post('/api/blogs')
@@ -334,5 +337,60 @@ describe('Api tests', () => {
             })
 
         assert.strictEqual(response.status, 400)
+    })
+    test('test delete success', async () => {
+        // get some existing id
+        const blog = await api.get('/api/blogs')
+        const first = blog.body[0].id
+        // delete id
+        const response = await api.delete(`/api/blogs/${first}`)
+        assert.strictEqual(response.status, 204)
+    })
+    test('test delete  404', async () => {
+        const response = await api.delete('/api/blogs/5a422b3a1b54a676234d17f6')
+        assert.strictEqual(response.status, 404)
+    })
+    test('test delete 500', async () => {
+        const response = await api.delete('/api/blogs/5a422b3a1b234d17f6')
+        assert.strictEqual(response.status, 500)
+    })
+    test('test update success', async () => {
+        // get some existing id
+        const blog = await api.get('/api/blogs')
+        const first = blog.body[0].id
+        // update id
+        const response = await api.put(`/api/blogs/${first}`)
+            .send({
+                title: "update title", 
+                author: "author3", 
+                url: "url3",
+                likes: 500
+            })
+
+        assert.strictEqual(response.status, 200)
+        assert.strictEqual(response.body.likes, 500)
+        assert.strictEqual(response.body.title, "update title")
+    })
+    test('test update 404', async () => {
+        const response = await api.put('/api/blogs/5a422b3a1b54a676234d17f6')
+            .send({
+                title: "update title", 
+                author: "author3", 
+                url: "url3",
+                likes: 500
+            })
+
+        assert.strictEqual(response.status, 404)
+    })
+    test('test update 505', async () => {
+        const response = await api.put('/api/blogs/5a4234d17f6')
+            .send({
+                title: "update title", 
+                author: "author3", 
+                url: "url3",
+                likes: 500
+            })
+
+        assert.strictEqual(response.status, 500)
     })
 })
