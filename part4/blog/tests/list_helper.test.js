@@ -4,6 +4,7 @@ const assert = require('node:assert')
 const mongoose = require('mongoose')
 const listHelper = require('../utils/list_helper')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const app = require('../app')
 
 const api = supertest(app)
@@ -265,7 +266,7 @@ describe('most likes', () => {
     })
 })
 
-describe('Api tests', () => {
+describe('Api Blog tests', () => {
     before(async () => {
         await Blog.deleteMany({});
         const b1 = new Blog({title: "title 1", author: "author1", url: "url1", likes: 10})
@@ -393,4 +394,26 @@ describe('Api tests', () => {
 
         assert.strictEqual(response.status, 500)
     })
+})
+
+describe('Api user test', () => {
+    test('invalid username returun 400', async () => {
+        const response = await api.post('/api/users')
+            .send({
+                username: "ab", 
+                name: "name", 
+                password: "123456"
+            })
+        assert.deepEqual(response.status, 400)
+    })
+    test('invalid password returun 400', async () => {
+        const response = await api.post('/api/users')
+            .send({
+                username: "abc", 
+                name: "name", 
+                password: "12"
+            })
+        assert.deepEqual(response.status, 400)
+    })
+
 })
