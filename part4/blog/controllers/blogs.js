@@ -56,6 +56,7 @@ blogRouter.put('/:id', async (request, response) => {
         return response.status(200).json(updateOject)
     }
     catch (err) {
+        console.log(err)
         return response.status(500).end()
     }
 })

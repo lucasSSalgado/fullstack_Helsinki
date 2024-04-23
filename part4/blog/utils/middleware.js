@@ -14,6 +14,9 @@ const tokenExtractor = (request, response, next) => {
 }
 
 const userExtractor = async (request, response, next) => {
+  if (!request.token) {
+    return response.status(401).json({ error: 'token missing' })
+  }
   const decodedToken = jwt.verify(request.token, process.env.SECRET)
   if (!decodedToken.id) {
       return response.status(401).json({ error: 'token invalid' }) 
@@ -43,6 +46,8 @@ if (error.name === 'CastError') {
     } else if (error.name === 'ValidationError') {
         return response.status(400).json({ error: error.message })
     } else if (error.name === 'TypeError') {
+      return response.status(401).json({ error: 'token invalid' })
+    } else if (error.name === 'JsonWebTokenError') {
       return response.status(401).json({ error: 'token invalid' })
     }
     next(error)
