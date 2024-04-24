@@ -1,5 +1,5 @@
-import { useState } from "react"
-import blogService from "../services/blogs"
+import { useState } from 'react'
+import blogService from '../services/blogs'
 
 const Blog = ({ blog, user, setNewBlog }) => {
   const [visible, setVisible] = useState(false)
@@ -11,7 +11,7 @@ const Blog = ({ blog, user, setNewBlog }) => {
 
   const handleDelete = async (id) => {
     if (blog.author !== user.name) {
-      alert("You don't have permission to delete this blog.")
+      alert('You don\'t have permission to delete this blog.')
       return
     }
     if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
@@ -22,22 +22,22 @@ const Blog = ({ blog, user, setNewBlog }) => {
   }
 
   return (
-  <div style={{ border: '1px solid black', padding: 5, margin: 5 }}>
-    {blog.title}
-    <button onClick={() => setVisible(!visible)}>
-      {visible ? 'hide' : 'view'}
-    </button>
+    <div style={{ border: '1px solid black', padding: 5, margin: 5 }}>
+      {blog.title}
+      <button onClick={() => setVisible(!visible)}>
+        {visible ? 'hide' : 'view'}
+      </button>
 
-    {
-      visible && 
+      {
+        visible &&
       <div>
         {blog.url} <br />
-        Likes {blog.likes} <button onClick={ handleAddLike }>like</button> <br /> 
+        Likes {blog.likes} <button onClick={ handleAddLike }>like</button> <br />
         {blog.author} <br />
         <button onClick={() => handleDelete(blog.id) }>remove</button>
       </div>
-    }
-  </div> 
+      }
+    </div>
   )
 }
 

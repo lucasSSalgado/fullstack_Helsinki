@@ -15,7 +15,7 @@ const App = () => {
   const handleLogin = async (event) => {
     event.preventDefault()
     try {
-      const user = await blogService.login({username, password})
+      const user = await blogService.login({ username, password })
       setUser(user)
       localStorage.setItem('user', JSON.stringify(user))
       setUsername('')
@@ -30,13 +30,20 @@ const App = () => {
       }, 4000)
     }
   }
+  const handleLogout = () => {
+    setUser(null)
+    localStorage.removeItem('user')
+  }
+
   useEffect(() => {
     const getAllB = async () => {
-      const blogs = await blogService.getAll(user.token)
-      const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
-      setBlogs(sortedBlogs)
+      if (user) {
+        const blogs = await blogService.getAll(user.token)
+        const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes)
+        setBlogs(sortedBlogs)
+      }
     }
-    getAllB() 
+    getAllB()
   }, [user, newBlog])
   useEffect(() => {
     const loggedUserJSON = localStorage.getItem('user')
@@ -51,14 +58,14 @@ const App = () => {
     <div>
       <h2>Log in to application</h2>
       {
-        erroLogin && 
-        <div style={{color: 'red', border: '1px solid red', padding: '5px', borderRadius: '5px'}}>
+        erroLogin &&
+        <div style={{ color: 'red', border: '1px solid red', padding: '5px', borderRadius: '5px' }}>
           Wrong credentials
         </div>
       }
       <form onSubmit={handleLogin}>
         <div>
-          username: 
+          username:
           <input
             type="text"
             value={username}
@@ -66,8 +73,8 @@ const App = () => {
           />
         </div>
         <div>
-          password: 
-            <input
+          password:
+          <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -81,7 +88,7 @@ const App = () => {
   const BlogList = () => (
     <div>
       <h2>blogs</h2>
-      <p>{user.name} logged in <button onClick={() => setUser(null)}>logout</button></p>
+      <p>{user.name} logged in <button onClick={ handleLogout }>logout</button></p>
       <Togglable buttonLabel="new blog">
         <BlogForm setNewBlog={setNewBlog} newBlog={newBlog} user={user}/>
       </Togglable>
