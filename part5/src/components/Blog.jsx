@@ -8,7 +8,6 @@ const Blog = ({ blog, user, setNewBlog }) => {
     setNewBlog(true)
     setTimeout(() => setNewBlog(false), 4000)
   }
-
   const handleDelete = async (id) => {
     if (blog.author !== user.name) {
       alert('You don\'t have permission to delete this blog.')
@@ -23,17 +22,17 @@ const Blog = ({ blog, user, setNewBlog }) => {
 
   return (
     <div style={{ border: '1px solid black', padding: 5, margin: 5 }}>
-      {blog.title}
+      {blog.title} - {blog.author}
       <button onClick={() => setVisible(!visible)}>
         {visible ? 'hide' : 'view'}
       </button>
 
       {
         visible &&
-      <div>
-        {blog.url} <br />
-        Likes {blog.likes} <button onClick={ handleAddLike }>like</button> <br />
-        {blog.author} <br />
+      <div className='hiden'>
+        <p className='url'>{blog.url}</p>
+        <p className='likes'>Likes {blog.likes} <button onClick={ handleAddLike }>like</button> </p>
+        <p>{blog.author}</p>
         <button onClick={() => handleDelete(blog.id) }>remove</button>
       </div>
       }

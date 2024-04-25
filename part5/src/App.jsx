@@ -34,7 +34,6 @@ const App = () => {
     setUser(null)
     localStorage.removeItem('user')
   }
-
   useEffect(() => {
     const getAllB = async () => {
       if (user) {
