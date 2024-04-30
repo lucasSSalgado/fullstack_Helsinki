@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "node --test"
+    "test": "node --test",
+    "start:test": "NODE_ENV=test node index.js"
   },
   "keywords": [],
   "author": "Lucas Sodre Salgado",
