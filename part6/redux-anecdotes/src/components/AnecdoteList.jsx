@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { like } from '../reducers/anecdoteReducer'
+import { likeAnecdote } from '../reducers/anecdoteReducer'
 import { notify } from '../reducers/notificationReducer'
 
 const AnecdoteList = () => {
@@ -13,35 +13,37 @@ const AnecdoteList = () => {
     let ordered = orderByLike(anecdotes)
 
     const vote = (id) => {
-        dispatch(like(id))
         const obj = anecdotes.filter(a => a.id == id)
+        dispatch(likeAnecdote(obj[0]))
         dispatch(notify(`you voted '${obj[0].content}'`))
     }
 
     const filtered = useSelector(state => {
         if (state.filter === 'ALL') {
-          return ordered;
+          return ordered
         } 
         else {
           return ordered.filter(anecdote =>
-            anecdote.content.toLowerCase().includes(state.filter.toLowerCase())
-          );
+            anecdote.content.toLowerCase().includes(state.anecdote.filter.toLowerCase())
+          )
         }
-    });
+    })
 
     return (
         <div>
-            {filtered.map(anecdote =>
-                <div key={anecdote.id}>
-                <div>
-                    {anecdote.content}
-                </div>
-                <div>
-                    has {anecdote.votes}
-                    <button onClick={() => vote(anecdote.id)}>vote</button>
-                </div>
-                </div>
-            )}
+            {
+                filtered.map(anecdote =>
+                    <div key={anecdote.id}>
+                    <div>
+                        {anecdote.content}
+                    </div>
+                    <div>
+                        has {anecdote.votes}
+                        <button onClick={() => vote(anecdote.id)}>vote</button>
+                    </div>
+                    </div>
+                )
+            }
         </div>
     )
 }
