@@ -26,6 +26,18 @@ blogRouter.post('/', async (request, response) => {
     return response.status(201).json(resp)
 })
 
+blogRouter.post('/:id/comments', async (request, response) => {
+    try {
+        const blog = await Blog.findById(request.params.id)
+
+        blog.comments = blog.comments.concat(request.body.comment)
+        const resp = await blog.save()
+        return response.status(201).json(resp)
+    } catch (err) {
+        return response.status(500).end()
+    }     
+})
+
 blogRouter.delete('/:id', async (request, response) => {
     try {
         const deletedObject = await Blog.findById(request.params.id)
