@@ -12,6 +12,9 @@ const schema = new mongoose.Schema({
   born: {
     type: Number,
   },
+  phone: {
+    type: Number,
+  }
 })
 
 schema.plugin(uniqueValidator)

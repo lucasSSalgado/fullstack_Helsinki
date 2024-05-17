@@ -1,4 +1,5 @@
-import { useState } from "react"
+/* eslint-disable react/prop-types */
+import { useState, useEffect } from "react"
 import { useMutation } from "@apollo/client"
 import { EDIT_AUTHOR, ALL_AUTHORS } from "../queries/query"
 
@@ -11,10 +12,15 @@ const EditAuthorForm = ({ authors }) => {
         refetchQueries: [ { query: ALL_AUTHORS } ]
     })
 
+    useEffect(() => {
+        if (authors.length > 0) {
+            setName(authors[0].name)
+        }
+    }, [authors])
+
     const handleSubmit = (e) => {
         e.preventDefault()
-        console.log(name)
-        editAuthor({variables: { name, setBornTo: Number(born) }})
+        editAuthor({ variables: { name, setBornTo: Number(born) }})
         setBorn('')
         setName('')
     }
@@ -23,7 +29,7 @@ const EditAuthorForm = ({ authors }) => {
         <div>
             <h2>Set Birthdate</h2>
             <form onSubmit={ handleSubmit }>
-                <select value={name} onChange={({ target }) => setName(target.value)}> 
+                <select value={name} onChange={(e) => setName(e.target.value)}> 
                     { authors.map(a => {
                         return <option key={a.id} value={a.name}>{a.name}</option> 
                     }) }

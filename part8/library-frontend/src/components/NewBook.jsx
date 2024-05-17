@@ -1,6 +1,7 @@
+/* eslint-disable react/prop-types */
 import { useState } from 'react'
 import { useMutation } from '@apollo/client'
-import { ADD_BOOK, ALL_BOOKS,  ALL_AUTHORS } from '../queries/query'
+import { ADD_BOOK, ALL_BOOKS,  ALL_AUTHORS, BOOK_BY_GENRE } from '../queries/query'
 
 const NewBook = (props) => {
   const [title, setTitle] = useState('')
@@ -10,7 +11,7 @@ const NewBook = (props) => {
   const [genres, setGenres] = useState([])
 
   const [ addBook ] = useMutation(ADD_BOOK, {
-    refetchQueries: [ { query: ALL_BOOKS }, { query: ALL_AUTHORS } ]
+    refetchQueries: [ { query: ALL_BOOKS }, { query: ALL_AUTHORS }, { query: BOOK_BY_GENRE, variables: { genre: '' } } ]
   })
 
   if (!props.show) {
@@ -20,7 +21,7 @@ const NewBook = (props) => {
   const submit = async (event) => {
     event.preventDefault()
     const intVal = parseInt(published)
-    addBook({variables: { title, author, published: intVal, genres }})
+    addBook({ variables: { title, author, published: intVal, genres }})
 
     setTitle('')
     setPublished('')

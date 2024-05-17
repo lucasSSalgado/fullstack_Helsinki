@@ -15,30 +15,74 @@ query {
     allBooks {
         title
         published
-        author
+        author {
+          name
+        }
         id
+        genres
     }
 }
 `
 
-export const ADD_BOOK = gql`
-  mutation createBook($title: String!, $author: String!, $published: Int!, $genres: [String!]!) 
-  {
-    addBook(title: $title, author: $author, published: $published, genres: $genres) {
-      title
-      author
-      published
-      genres
-    }
+export const FAVORITE = gql`
+query {
+  me {
+    favoriteGenre
   }
-  
+  allBooks {
+    title
+    published
+    author {
+      name
+    }
+    genres
+  }
+}
+`
+
+export const BOOK_BY_GENRE = gql`
+query bookByGenre($genre: String) {
+  booksByGenre(genre: $genre) {
+    title
+    author {
+      name
+    }
+    published
+    id
+    genres
+  }
+}
+`
+
+export const ADD_BOOK = gql`
+mutation createBook($title: String!, $author: String!, $published: Int!, $genres: [String!]!) 
+{
+  addBook(title: $title, author: $author, published: $published, genres: $genres) {
+    title
+    author {
+      name
+    }
+    published
+    genres
+  }
+}
+
 `
 
 export const EDIT_AUTHOR = gql`
-  mutation editAuthor($name: String!, $setBornTo: Int!) {
-    editAuthor(name: $name, setBornTo: $setBornTo) {
-      name
-      born
-    }
+mutation editAuthor($name: String!, $setBornTo: Int!) {
+  editAuthor(name: $name, setBornTo: $setBornTo) {
+    name
+    born
   }
+}
 `
+
+export const LOGIN = gql`
+mutation Mutation($username: String!, $password: String!) {
+  login(username: $username, password: $password) {
+    value
+  }
+}
+`
+

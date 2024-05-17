@@ -22,11 +22,11 @@ mongoose.connect(MONGODB_URI)
 
 const typeDefs = `
   type Author {
-      name: String!
-      id: ID!
-      born: Int
-      phone: Int
-      bookCount: Int!
+    name: String!
+    id: ID!
+    born: Int
+    phone: Int
+    bookCount: Int!
   }  
 
   type Book {
@@ -39,6 +39,7 @@ const typeDefs = `
 
   type User {
     username: String!
+    favoriteGenre: String!
     id: ID!
   }
   
@@ -51,13 +52,14 @@ const typeDefs = `
     authorCount: Int!,
     allBooks(author: String, genre: String): [Book!],
     allAuthors: [Author!],
-    me: User
+    me: User,
+    booksByGenre(genre: String): [Book!]
   }
 
   type Mutation {
     addBook(title: String!, author: String!, published: Int!, genres: [String!]!): Book
     editAuthor(name: String!, setBornTo: Int!): Author
-    createUser(username: String!): User
+    createUser(username: String!, favoriteGenre: String!): User
     login(username: String!, password: String!): Token
   }
 `
@@ -77,13 +79,25 @@ const resolvers = {
           return await Book.find({}).populate('author')
       }
     },
-    allAuthors: async () => Author.find({}),
+    allAuthors: async () => {
+      return await Author.find({})
+    },
     me: (root, args, context) => {
       return context.currentUser
+    },
+    booksByGenre: async (root, args) => {
+      if (!args.genre) {
+        return await Book.find({}).populate('author')
+      }
+      return await Book.find({ genres: args.genre }).populate('author')
     }
+
   }, 
   Author: {
-    bookCount: async (root) => Book.find({ author: root.name }).count()
+    bookCount: async (root) => {
+      const author = await Author.findOne({ name: root.name })
+      return await Book.find({ author: author }).countDocuments()
+    } 
   },
   Mutation: {
     addBook: async (root, args, context) => {
@@ -99,7 +113,7 @@ const resolvers = {
       const existentAuthor = await Author.find({ name: args.author })
 
       if (existentAuthor.length == 0) {
-          const newAuthor = new Author({ name: args.author} )
+          const newAuthor = new Author({ name: args.author } )
           try {
             await newAuthor.save()
             const newBook = new Book({ ...args, author: newAuthor })  
@@ -160,7 +174,7 @@ const resolvers = {
       }
     },
     createUser: async (root, args) => {
-      const user = new User({ username: args.username })
+      const user = new User({ username: args.username, favoriteGenre: args.favoriteGenre })
       try {
         return await user.save()
       } catch (error) {

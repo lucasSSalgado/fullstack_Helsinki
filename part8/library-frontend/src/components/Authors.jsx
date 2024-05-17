@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import {  useQuery } from '@apollo/client'
 import { ALL_AUTHORS } from '../queries/query'
 import EditAuthorForm from './EditAuthorForm'
@@ -32,8 +33,7 @@ const Authors = (props) => {
           ))}
         </tbody>
       </table>
-
-      <EditAuthorForm authors={result.data.allAuthors} />
+      { props.user && <EditAuthorForm authors={result.data.allAuthors} user={props.user} /> }    
     </div>
   )
 }
