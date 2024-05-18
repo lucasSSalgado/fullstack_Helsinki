@@ -2,9 +2,11 @@
 import { useState } from 'react'
 import { useMutation } from '@apollo/client'
 import { ADD_BOOK, ALL_BOOKS,  ALL_AUTHORS, BOOK_BY_GENRE } from '../queries/query'
+import Notify from './Notification'
 
 const NewBook = (props) => {
   const [title, setTitle] = useState('')
+  const [show, setShow] = useState(false)
   const [author, setAuthor] = useState('')
   const [published, setPublished] = useState('')
   const [genre, setGenre] = useState('')
@@ -28,6 +30,11 @@ const NewBook = (props) => {
     setAuthor('')
     setGenres([])
     setGenre('')
+    setShow(true)
+
+    setTimeout(() => {
+      setShow(false)
+    }, 5000)
   }
 
   const addGenre = () => {
@@ -37,6 +44,7 @@ const NewBook = (props) => {
 
   return (
     <div>
+      { show && <Notify />}
       <form onSubmit={submit}>
         <div>
           title

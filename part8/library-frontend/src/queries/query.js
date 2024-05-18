@@ -29,14 +29,6 @@ query {
   me {
     favoriteGenre
   }
-  allBooks {
-    title
-    published
-    author {
-      name
-    }
-    genres
-  }
 }
 `
 
@@ -86,3 +78,16 @@ mutation Mutation($username: String!, $password: String!) {
 }
 `
 
+export const BOOK_ADDED = gql`
+subscription {
+  bookAdded {
+    title
+    published
+    author {
+      name
+    }
+    id
+    genres
+  }
+}
+`

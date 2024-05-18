@@ -5,6 +5,10 @@ import Books from "./components/Books";
 import NewBook from "./components/NewBook";
 import LoginForm from "./components/LoginForm";
 import Recommended from "./components/Recommended";
+import { BOOK_ADDED, ALL_BOOKS, FAVORITE } from "./queries/query";
+import { useQuery } from "@apollo/client";
+import { useSubscription } from '@apollo/client'
+import { updateCacheAllBooks } from './utils'
 
 const App = () => {
   const [page, setPage] = useState("authors");
@@ -17,10 +21,19 @@ const App = () => {
     client.resetStore();
   }
 
+  const favoriteResult = useQuery(FAVORITE)
+
   useEffect(() => {
     const userLocal = JSON.parse(localStorage.getItem('user'))
     if(userLocal) setUser(userLocal)
   }, [])
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data, client }) => {
+      const bookAdded = data.data.bookAdded
+      updateCacheAllBooks(client, ALL_BOOKS, bookAdded)
+    }
+  })
 
   return (
     <div>
@@ -38,7 +51,7 @@ const App = () => {
 
       <NewBook show={page === "add"} />
 
-      <Recommended show={page === "recommended"} user={user}/>
+      { !favoriteResult.loading && user && <Recommended show={page === "recommended"} favoriteResult={favoriteResult} /> }
 
       <LoginForm show={page === "login"} setUser={setUser} />
     </div>
