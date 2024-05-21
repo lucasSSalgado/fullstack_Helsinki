@@ -7,6 +7,8 @@ const calculateBmi = (heightCM: number, weightKG: number): string => {
         return "Normal (healthy weight)";
     } else if (bmi < 30) {
         return "Overweight";
+    } else {
+        return "Something get wrong";
     }
 }
 
@@ -31,6 +33,14 @@ const checkArguments = (args: string[]): ParsonData => {
         throw new Error('Provided values were not numbers!');
     }
 }
-const { heightMeter, weightKG } = checkArguments(process.argv);
 
-console.log(calculateBmi(heightMeter, weightKG));
+if (require.main === module) {
+    try {
+        const { heightMeter, weightKG } = checkArguments(process.argv);
+        console.log(calculateBmi(heightMeter, weightKG));
+    } catch (error) {
+        console.error(error.message);
+    }
+}
+
+export { calculateBmi }

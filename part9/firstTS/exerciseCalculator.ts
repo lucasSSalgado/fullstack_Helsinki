@@ -65,6 +65,15 @@ const validateInputs = (args: string[]): SanitizeInputs => {
     }
 }
 
-const { weakData, target } = validateInputs(process.argv);
+if (require.main === module) {
+    try {
+        const { weakData, target } = validateInputs(process.argv);
 
-console.log(calculateExercises(weakData, target));
+        console.log(calculateExercises(weakData, target));
+    } catch (error) {
+        console.error(error.message);
+    }
+}
+
+
+export { calculateExercises }
